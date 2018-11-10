@@ -1,0 +1,211 @@
+----------------------------------------------------------------------------------
+--library IEEE;
+--use IEEE.STD_LOGIC_1164.ALL;
+--use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity FSM_Digicode is
+    Port ( ck        : in  STD_LOGIC;								-- Horloge
+           reset     : in  STD_LOGIC;								-- Reset Asynchrone
+           jour      : in  STD_LOGIC;		-- Mode de fonctionnement
+           i         : in  STD_LOGIC_VECTOR (3 downto 0);	-- entrée sur quatre bits
+           o         : in  STD_LOGIC;
+           press_kbd : in  STD_LOGIC;
+	   cinq_secondes_ecoulees : in STD_LOGIC; -- pour permettre de simuler à travers des vecteurs d'entrée du .pat
+	   deux_minutes_ecoulees : in STD_LOGIC;
+           vdd, vss  : in  STD_LOGIC;
+           
+           porte     : out STD_LOGIC;
+           alarm     : out STD_LOGIC);		-- alarm en cas d'erreur
+end FSM_Digicode;
+
+architecture Behavioral of FSM_Digicode is
+
+
+type etat is (IDLE, E_Mode_Jour, E_Mode_Nuit, E_Ouverture_porte, E_Porte_Ouverte, E_ALARME, E_Code_5, E_Code_5_valide,
+              E_Code_3, E_Code_3_valide, E_Code_A, E_Code_A_valide, E_Code_1, E_Code_1_valide, E_Code_7, E_Code_7_valide);		    -- Etats de la MAE
+
+signal EP,EF: etat;													-- Etat Présent, Etat Futur
+--signal cinq_secondes_ecoulees : STD_LOGIC;
+--signal deux_minutes_ecoules  : STD_LOGIC ;
+
+  -- pragma CURRENT_STATE EP
+  -- pragma NEXT_STATE EF
+  -- pragma CLOCK CK
+
+begin
+
+
+	---------------------------
+	-- MAE - Registre d'Etat --
+	---------------------------
+	process(ck)
+	
+	begin
+		
+		-- Si on A un Front d'Horloge
+		if (ck = '1' and not ck'stable) then
+		    EP <= EF; -- Mise à Jour du Registre d'Etat
+		end if;
+	end process;
+	
+	
+	----------------------------------------------
+	-- MAE - Evolution des Etats et des Sorties --
+	----------------------------------------------
+	process(EP, i, jour, press_kbd, o)
+	
+	begin		
+		 --5_secondes_ecoulees<='1' after 0.2 us; -- a voir de très près
+         --2_minutes_ecoulees <= '1' after 0.4 us;
+		
+	if ( reset = '1' ) then EF <= IDLE;
+	else
+
+	case (EP) is
+		    when IDLE =>
+
+                porte <= '0';
+                alarm <= '0';
+
+                if(jour = '1') then       -- Mode jour
+                    EF <= E_Mode_Jour;
+                else -- Mode nuit
+                    EF <= E_Mode_Nuit;
+                end if;
+            when E_Mode_Jour =>
+
+                porte <= '0';
+                alarm <= '0';
+
+                if(cinq_secondes_ecoulees = '1') then EF <= IDLE;
+                elsif ( o = '1') then EF <= E_Ouverture_porte;
+                else EF <= E_Mode_Jour;
+                end if;
+            when E_Ouverture_porte =>
+
+                porte <= '0';
+                alarm <= '0';
+
+                if(cinq_secondes_ecoulees = '1') then EF <= IDLE;
+                elsif(press_kbd = '1' and o = '1') then EF <= E_Porte_Ouverte;
+                else EF <= E_Ouverture_porte;
+                end if;
+            when E_Porte_Ouverte =>
+                
+                porte <= '1';
+                alarm <= '0';
+                EF <= IDLE;
+
+            when E_Mode_Nuit =>
+            
+                porte <= '0';
+                alarm <= '0';
+
+                if(cinq_secondes_ecoulees = '1') then EF <= IDLE;
+                elsif ( i = "0101") then EF <= E_Code_5;
+                else EF <= E_ALARME;
+                end if;
+            when E_Code_5 =>
+
+                 porte <= '0';
+                 alarm <= '0';
+
+                if(cinq_secondes_ecoulees = '1') then EF <= IDLE;
+                elsif(press_kbd = '1' and i = "0101") then EF <= E_Code_5_valide;
+                else EF <= E_ALARME;
+                end if;
+            when E_Code_5_valide =>
+
+                 porte <= '0';
+                 alarm <= '0';
+
+                if(cinq_secondes_ecoulees = '1') then EF <= IDLE;
+                elsif(i = "0011") then EF <= E_Code_3;
+                else EF <= E_ALARME;
+                end if;
+            when E_Code_3 =>
+
+                 porte <= '0';
+                 alarm <= '0';
+
+                if(cinq_secondes_ecoulees = '1') then EF <= IDLE;
+                elsif(press_kbd = '1' and i = "0011") then EF <= E_Code_3_valide;
+                else EF <= E_ALARME;
+          
+                end if;
+            when E_Code_3_valide =>
+
+                 porte <= '0';
+                 alarm <= '0';
+
+                if(cinq_secondes_ecoulees = '1') then EF <= IDLE;
+                elsif(i = "1010") then EF <= E_Code_A;
+                else EF <= E_ALARME;
+                end if;
+            when E_Code_A =>
+
+                 porte <= '0';
+                 alarm <= '0';
+
+                if(cinq_secondes_ecoulees = '1') then EF <= IDLE;
+                elsif(press_kbd = '1' and i = "1010") then EF <= E_Code_A_valide;
+                else EF <= E_ALARME;
+                
+                end if;
+            when E_Code_A_valide =>
+
+                 porte <= '0';
+                 alarm <= '0';
+
+                if(cinq_secondes_ecoulees = '1') then EF <= IDLE;
+                elsif(i = "0001") then EF <= E_Code_1;
+                else EF <= E_ALARME;
+                end if;
+            when E_Code_1 =>
+
+                 porte <= '0';
+                 alarm <= '0';
+
+                if(cinq_secondes_ecoulees = '1') then EF <= IDLE;
+                elsif(press_kbd = '1' and i = "0001") then EF <= E_Code_1_valide;
+                else EF <= E_ALARME;
+             
+                end if;
+            when E_Code_1_valide =>
+
+                 porte <= '0';
+                 alarm <= '0';
+
+                if(cinq_secondes_ecoulees = '1') then EF <= IDLE;
+                elsif(i = "0111") then EF <= E_Code_7;
+                else EF <= E_ALARME;
+                end if;
+            when E_Code_7 =>
+
+                 porte <= '0';
+                 alarm <= '0';
+
+                if(cinq_secondes_ecoulees = '1') then EF <= IDLE;
+                elsif(press_kbd = '1' and i = "0111") then EF <= E_Porte_Ouverte;
+                else EF <= E_ALARME;
+             
+                end if;
+            when E_ALARME =>
+
+                porte <= '0';
+                alarm <= '1';
+                
+                if(deux_minutes_ecoulees = '1') then EF <= IDLE;
+                else
+                    EF <= E_ALARME;
+                end if;
+
+            when others => assert('1')
+			   report "etat illegal";
+		end case;
+	end if;
+	end process;
+
+
+end Behavioral;
+

@@ -1,0 +1,41 @@
+in ck;
+in reset;
+in jour;
+in i(0 to 3) X;
+in o;
+in press_kbd;
+in cinq_secondes_ecoulees;
+in deux_minutes_ecoulees;
+out porte;
+out alarm;
+
+begin
+
+< 0  ns > pattern_0   :   0 1 1 ?* 1 1 0 0 *? *?;
+< 100 ns > pattern_1   :   1 0 0 A *? 1 0 1 *? *?;
+< 200 ns > pattern_2   :   1 0 0 B *? 1 0 1 *? *?;
+< 300 ns > pattern_3   :   1 0 0 5 *? 1 0 0 *? *?;
+< 400 ns > pattern_4   :   1 0 0 3 *? 1 0 0 *? *?;
+< 500 ns > pattern_5   :   1 0 0 A *? 1 0 0 *? *?;
+< 600 ns > pattern_6   :   1 0 0 1 *? 1 0 0 *? *?;
+< 700 ns > pattern_7   :   1 0 0 7 *? 1 0 0 *? *?;
+< 800 ns > pattern_8   :   1 0 0 5 *? 1 0 0 *? *?;
+< 900 ns > pattern_9   :   1 0 0 5 *? 1 0 0 *? *?;
+< 1000 ns > pattern_10 :   1 0 0 5 *? 1 0 0 *? *?;
+< 1100 ns > pattern_11 :   1 0 0 5 *? 1 0 0 *? *?;
+< 1200 ns > pattern_12 :   1 0 0 5 *? 1 0 0 *? *?;
+< 1300 ns > pattern_13 :   1 0 0 5 *? 1 0 0 *? *?;
+< 1400 ns > pattern_14 :   1 0 0 5 *? 1 0 0 *? *?;
+< 1500 ns > pattern_15 :   1 0 0 5 *? 1 0 0 *? *?;
+< 1600 ns > pattern_16 :   1 0 0 5 *? 1 0 0 *? *?;
+< 1700 ns > pattern_17 :   1 0 0 5 *? 1 0 0 *? *?;
+< 1800 ns > pattern_9  :   1 0 0 5 *? 1 0 0 *? *?;
+< 1900 ns > pattern_10 :   1 0 0 5 *? 1 0 0 *? *?;
+< 2000 ns > pattern_11 :   1 0 0 5 *? 1 0 0 *? *?;
+< 2100 ns > pattern_12 :   1 0 0 5 *? 1 0 0 *? *?;
+< 2200 ns > pattern_13 :   1 0 0 5 *? 1 0 0 *? *?;
+< 2300 ns > pattern_14 :   1 0 0 5 *? 1 0 0 *? *?;
+< 2400 ns > pattern_15 :   1 0 0 5 *? 1 0 0 *? *?;
+< 2500 ns > pattern_16 :   1 0 0 5 *? 1 0 0 *? *?;
+< 2600 ns > pattern_17 :   1 0 0 5 *? 1 0 0 *? *?;
+end;
